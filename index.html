@@ -17,7 +17,10 @@
     eating(green)=food stops · activities(orange)=sightseeing stops.
   cat: flight car food market cathedral church castle wall palace museum
        viewpoint plaza park shop hotel rest bridge landmark
-  Photos: set image:"https://..." or a data: URI (offline). Blank = placeholder.
+  Photos: easiest way is the PHOTOS list at the top of the script block — every
+          stop has its own line there; paste a URL between the quotes. You can also
+          set image:"https://..." (or a data: URI) on an item directly, which wins.
+          Photos show in the stop popup; tap one to view it full-screen.
   ============================================================================
 -->
 <style>
@@ -182,6 +185,10 @@
   .modal .mbanner{height:150px;position:relative;display:grid;place-items:center;color:var(--red);background:linear-gradient(150deg,var(--gold-soft),var(--red-soft));border-bottom:3px solid var(--gold-2)}
   .modal .mbanner svg.glyph{width:66px;height:66px;opacity:.85}
   .modal .mbanner img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .modal .mbanner img.zoomable{cursor:zoom-in}
+  .mthumbs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:10px 0 2px}
+  .mthumbs::-webkit-scrollbar{display:none}
+  .mthumbs img{flex:0 0 auto;width:92px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--line);cursor:zoom-in}
   .modal .mclose{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.92);border:1px solid var(--line);color:var(--ink);font-size:19px;cursor:pointer;display:grid;place-items:center;z-index:2}
   .modal .mbody{padding:20px 22px 26px}
   .modal .mcat{text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:700;color:var(--gold)}
@@ -362,6 +369,128 @@ const ROUTE_DAY5 = ROUTE_LINE.slice(ROUTE_SPLIT_2, ROUTE_SPLIT_3 + 1);
 const ROUTE_DAY7 = ROUTE_LINE.slice(ROUTE_SPLIT_3);
 const ROUTE_COLORS = {day1:'#9E1B22', day3:'#2A9FD6', day5:'#4E8A5B', day7:'#8455B0'};
 
+
+/* ============================================================================
+   PHOTOS — one line per itinerary stop. Paste an image URL between the quotes
+   and that photo appears at the top of the stop's popup when you tap the item.
+   Leave "" to keep the plain icon banner. Any http(s) URL or data: URI works.
+   Tap the photo in the popup to see it full-screen.
+   Want more than one photo for a stop? Use a list instead of a single URL:
+       "2 · Toledo Cathedral": ["https://…/a.jpg", "https://…/b.jpg"],
+   The first becomes the banner; the rest show as thumbnails under the title.
+   ============================================================================ */
+const PHOTOS = {
+  /* ——— Day 0 · Dec 1 — Travel to Spain ——— */
+  "0 · Leave home": "",
+  "0 · Park at Comfort Inn Hotel": "images/ComfortInn.jpg",
+  "0 · Arrive at Boise Airport": "images/BoiseAirport.jpg",
+  "0 · Fly Boise → Dallas": "",
+  "0 · Arrive at Dallas Airport": "images/DallasAirport.jpg",
+  "0 · Fly Dallas → Madrid": "",
+
+  /* ——— Day 1 · Dec 2 — Madrid morning, then Toledo ——— */
+  "1 · Arrive at Madrid Airport": "images/MadridAirport.jpg",
+  "1 · Pick up the rental car": "images/Enterprise.jpg",
+  "1 · Park at APK2 Plaza de Oriente": "images/APK2Parking.png",
+  "1 · Breakfast": "images/LePraline.jpg",
+  "1 · Plaza de Oriente playground": "images/PlazaDeOrientPlayground.jpg",
+  "1 · Almudena Cathedral": "images/MadridCathedral.jpg",
+  "1 · Cathedral steps": "images/CathedralSteps.jpg",
+  "1 · Changing of the Guard": "images/ChangingOfTheGuard.png",
+  "1 · Snack · Qvadra Panis": "images/QvadraPanis.jpg",
+  "1 · Leave APK2 Plaza de Oriente": "images/APK2Parking.png",
+  "1 · Mercadona in Toledo": "images/Mercadona.jpg",
+  "1 · Check in · Aurea Toledo": "images/ToledoHotel.jpg",
+  "1 · Park at Santo Tome Parking Garge": "images/ParkingSantoTome.jpg",
+  "1 · Rest at the hotel before dinner": "images/ToledoHotelRest.jpg",
+  "1 · Early dinner": "images/Botero.jpg",
+  "1 · Return to Aurea Toledo": "images/ToeldoHotel3.jpg",
+
+  /* ——— Day 2 · Dec 3 — Toledo, on foot ——— */
+  "2 · Breakfast at hotel": "images/ToledoBreakfast.jpg",
+  "2 · Santa Iglesia Catedral": "images/Catedral%20Primada%20de%20Toledo.jpg",
+  "2 · Coffee · Cafetería Mutelot": "images/CafeMulot.jpg",
+  "2 · Posada de la Hermandad": "images/Posada%20de%20la%20hermandad.jpg",
+  "2 · Obrador Santo Tomé": "images/ObradorSantoTome.jpg",
+  "2 · Nap": "",
+  "2 · Lunch · carcamusas": "images/BarSkala.jpg",
+  "2 · Church of Santo Tomé": "images/ChurchofSantoTome.jpg",
+  "2 · Mariano Zamorano · sword-smiths": "images/SwordFactory.jpg",
+  "2 · Cave of Hercules": "images/Hercules.jpg",
+  "2 · A Spanish McDonald's": "images/Mcdonalds.jpg",
+  "2 · Alcázar de Toledo": "images/AlcazeDeToledo.jpg",
+  "2 · Castle playground": "images/ToledoAlcazarPlayground.jpg",
+  "2 · Rest at the hotel": "images/ToeldoHotel4.jpg",
+  "2 · Dinner": "images/Spiga.jpg",
+  "2 · Return to Aurea Toledo": "images/ToeldoHotel3.jpg",
+
+  /* ——— Day 3 · Dec 4 — Toledo to Ávila, via Madrid ——— */
+  "3 · Breakfast at Áurea Toledo": "images/ToledoHotelBreakfast2.jpg",
+  "3 · Mirador del Valle": "images/Mirador%20del%20valle.jpg",
+  "3 · Park at Parking IH Galaxia Moncloa": "images/Parking%20Galaxia.jpg",
+  "3 · Coffee & snacks": "images/CoffeeAndBeer.jpg",
+  "3 · Museo de América - Toddler nap": "images/MuseumOfAmerica.jpg",
+  "3 · Faro de Moncloa": "images/Lighthouse.jpg",
+  "3 · Lunch near the car": "images/SavorHubChiken.jpg",
+  "3 · Valley of the Fallen": "images/ValleyofTheFallen.jpg",
+  "3 · Snack · Acquolina Guadarrama": "images/AcquolinaCafe.jpg",
+  "3 · Check in · Sofraga Palacio": "images/SofragaMain.jpg",
+  "3 · Rest at the hotel before dinner": "images/SofragaPalacio_rest.jpg",
+  "3 · Evening stroll & dinner": "images/SofragaRestaruant.jpg",
+  "3 · Return to Room": "images/Sofraga%20PalacioExtra.jpg",
+
+  /* ——— Day 4 · Dec 5 — Ávila, on foot ——— */
+  "4 · Breakfast at Sofraga Palacio": "images/SofragaPalacio_Breakfast.jpg",
+  "4 · Walls of Ávila": "images/AvilaWalls.jpg",
+  "4 · Coffee · Granier": "images/Granier_Avila.jpg",
+  "4 · Cathedral of Ávila": "images/AvilaCathedral.jpg",
+  "4 · Nap": "",
+  "4 · Lunch": "images/NachesBurgers.jpg",
+  "4 · Basilica of San Vicente": "images/SanVicenteAvila.jpg",
+  "4 · Ciudad vieja de Ávila": "images/AvilaPlaza.jpg",
+  "4 · Snacks at La Barra del Chico": "images/La%20barra%20del%20chico.jpg",
+  "4 · Birthplace of Saint Teresa": "images/SaintTheresa.jpg",
+  "4 · Rest at the hotel": "images/SofragaPalacio_restAlt.jpg",
+  "4 · Dinner in Ávila": "images/Siglodoce.jpg",
+  "4 · Return to Hotel": "images/Sofraga%20PalacioExtra.jpg",
+
+  /* ——— Day 5 · Dec 6 — Coca & La Granja, then Segovia ——— */
+  "5 · Breakfast at Sofraga Palacio": "images/SofragaBreakfast2.jpg",
+  "5 · Coffee near Coca": "images/CocaTiendaRestaurante.jpg",
+  "5 · Tour Coca Castle": "images/CocaCastle.jpg",
+  "5 · Lunch in Coca": "images/CocaRestaruant.jpg",
+  "5 · Park at La Granja Public Parking": "images/ParkingLaGranja.jpg",
+  "5 · Royal Palace of La Granja": "images/LaGranjePalace.jpg",
+  "5 · Coffee & beer · Guadarrama Café": "images/LaGranjeCafe.jpg",
+  "5 · Check in · Convento Capuchinos": "images/SegoviaHotelMain.jpg",
+  "5 · Dinner in Segovia": "images/PatioDeLaNonna.jpg",
+  "5 · Return to Hotel": "images/SegoviaHotel_2.jpg",
+
+  /* ——— Day 6 · Dec 7 — Segovia, on foot ——— */
+  "6 · Breakfast at Convento Capuchinos": "images/SegoviaHotelBreakfast.jpg",
+  "6 · Alcázar of Segovia": "images/SegoviaCastle.jpg",
+  "6 · Coffee · Granier": "images/Granier_Segovia.jpg",
+  "6 · Segovia Cathedral": "images/SegoviaCathedral.jpg",
+  "6 · Nap": "",
+  "6 · Lunch in Segovia": "images/KofeLab.jpg",
+  "6 · Casa de los Picos": "images/CasaDeLosPicos.jpg",
+  "6 · The Roman Aqueduct": "images/Aqueduct.jpg",
+  "6 · Coffee and Snacks": "images/crepes.jpg",
+  "6 · Rest at the hotel": "images/SegoviaHotelRest.jpg",
+  "6 · Farewell dinner · cochinillo": "images/JoseMaria.jpg",
+  "6 · Return to Hotel": "images/SegoviaHotel_2.jpg",
+
+  /* ——— Day 7 · Dec 8 — Travel home ——— */
+  "7 · Leave the hotel": "",
+  "7 · Return the rental car": "images/Enterprise.jpg",
+  "7 · Fly Madrid → London": "images/LondonAirport.jpg",
+  "7 · Fly London → Phoenix": "images/PhonixAirport.jpg",
+  "7 · Fly Phoenix → Boise": "images/BoiseAirport.jpg",
+  "7 · Arrive at Boise Airport": "images/BoiseAirport.jpg",
+  "7 · Pick up the car at Comfort Inn Hotel": "images/ComfortInn.jpg",
+  "7 · Arrive home": "",
+};
+const photoKey=(dayN,title)=>`${dayN} · ${title}`;
 
 const TRIP = {
   meta:  {
@@ -3259,6 +3388,17 @@ const TRIP = {
   ]
 };
 
+
+/* === PHOTOS → itinerary items ============================================
+   Copies each PHOTOS entry onto its stop. An item's own image: wins if set,
+   and a value naming an ASSET_IMG key resolves to that embedded photo.      */
+TRIP.days.forEach(d=>d.items.forEach(it=>{
+  if(it.type==='move'||it.image)return;
+  const p=PHOTOS[photoKey(d.n,it.title)];
+  if(p&&p.length)it.image=p;
+}));
+const picsFor=it=>[].concat(it.image||[]).filter(Boolean).map(v=>Object.prototype.hasOwnProperty.call(ASSET_IMG,v)?ASSET_IMG[v]:v);
+
 /* ===== icons + glyphs ===== */
 const P=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
 const ICONS={walk:P('<circle cx="13" cy="4" r="1.6"/><path d="M12.5 7l-2 5 3 2 1.2 5M10.6 12l-3 1M14 8.5l3 1"/>'),
@@ -3412,7 +3552,9 @@ function renderDay(){
 /* ===== modal ===== */
 const scrim=$('#scrim'),modal=$('#modal');
 function openModal(it){
-  const banner=it.image?`<img src="${esc(it.image)}" alt="${esc(it.title)}" onerror="this.remove()">`:`<span class="glyph">${glyphFor(it.cat)}</span>`;
+  const pics=picsFor(it);
+  const banner=`<span class="glyph">${glyphFor(it.cat)}</span>`+(pics.length?`<img class="zoomable" src="${esc(pics[0])}" alt="${esc(it.title)}" onerror="this.remove()">`:'');
+  const thumbs=pics.length>1?`<div class="mthumbs">${pics.slice(1).map(p=>`<img class="zoomable" src="${esc(p)}" alt="${esc(it.title)}" onerror="this.remove()">`).join('')}</div>`:'';
   const facts=(it.facts&&it.facts.length)?`<div class="msec"><h4>Key facts</h4><ul class="mfacts">${it.facts.map(f=>`<li>${esc(f)}</li>`).join('')}</ul></div>`:'';
   const about=it.detail?`<div class="msec"><h4>About</h4><p>${esc(it.detail)}</p></div>`:'';
   const optHeader=(it.options&&it.options.length>1)?'Where to eat — choose one':'Where to eat';
@@ -3431,7 +3573,7 @@ function openModal(it){
   const linkrow=links.length?`<div class="mlinks">${links.join('')}</div>`:'';
   modal.innerHTML=`<div class="mbanner">${banner}<button class="mclose" aria-label="Close">×</button></div><div class="mbody">
     ${it.cuisine?`<div class="mcat">${esc(it.cuisine)}</div>`:(it.cat?`<div class="mcat">${esc(it.cat)}</div>`:'')}
-    <div class="mtitle">${esc(it.title)}</div>${it.place?`<div class="mplace">${esc(it.place)}</div>`:''}
+    <div class="mtitle">${esc(it.title)}</div>${it.place?`<div class="mplace">${esc(it.place)}</div>`:''}${thumbs}
     <div class="mgrid${it.cat==='food'?' one':''}"><div class="cell"><div class="cl">Time</div><div class="cv">${esc(it.time||'—')}</div></div>${it.cat==='food'?'':`<div class="cell"><div class="cl">Cost</div><div class="cv">${esc(it.cost||'—')}${it.costEur?` · $${usd(it.costEur)}`:''}</div></div><div class="cell"><div class="cl">Hours today</div><div class="cv">${esc(it.hours||'—')}</div></div>`}</div>
     ${it.fromHotel?`<div class="mfromhotel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-6 8 6M6 10v9h12v-9"/></svg>${esc(it.fromHotel)}</div>`:''}
     ${it.book?`<div class="mbook"><span>Tickets</span> ${esc(it.book)}</div>`:''}${about}${facts}${opts}${linkrow}</div>`;
